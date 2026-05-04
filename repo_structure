@@ -1,0 +1,48 @@
+github-analytics-platform/
+│
+├── README.md
+├── docker-compose.yml          # Airflow + Postgres metadata DB
+│
+├── extraction/
+│   ├── github_extractor.py     # API client with pagination & rate limiting
+│   ├── models.py               # Pydantic models for events
+│   └── config.py               # Env-based config
+│
+├── loaders/
+│   ├── gcs_loader.py           # Write raw JSON to GCS
+│   └── bq_loader.py            # Load GCS → BigQuery raw tables
+│
+├── dbt/
+│   ├── dbt_project.yml
+│   ├── profiles.yml
+│   ├── models/
+│   │   ├── staging/            # 1:1 with raw tables, light cleaning
+│   │   │   ├── stg_pull_requests.sql
+│   │   │   ├── stg_commits.sql
+│   │   │   ├── stg_issues.sql
+│   │   │   └── schema.yml      # Column tests + docs
+│   │   ├── intermediate/       # Business logic joins
+│   │   │   ├── int_pr_lifecycle.sql
+│   │   │   └── int_contributor_activity.sql
+│   │   └── marts/              # Final analytics-ready tables
+│   │       ├── fct_pull_requests.sql
+│   │       ├── fct_commits.sql
+│   │       ├── dim_contributors.sql
+│   │       └── dev_productivity_metrics.sql
+│   ├── tests/
+│   │   └── assert_pr_duration_positive.sql
+│   └── macros/
+│       └── generate_surrogate_key.sql
+│
+├── airflow/
+│   ├── dags/
+│   │   ├── github_ingestion_dag.py
+│   │   └── dbt_transformation_dag.py
+│   └── plugins/
+│
+├── great_expectations/         # Data quality (optional advanced step)
+│   └── expectations/
+│
+└── tests/
+    └── unit/
+        └── test_extractor.py
